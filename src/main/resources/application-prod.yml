@@ -1,0 +1,51 @@
+server:
+  port: 8090  #服务端口号
+  servlet:
+    context-path: /etax-datapool
+spring:
+  profiles:
+    active: dev
+  application:
+    name: etax-datapool
+  datasource:
+    url: jdbc:mysql://172.31.115.7:10127/etax_datapool?useUnicode=true&characterEncoding=utf-8&useSSL=false
+    username: jxtest
+    password: jxtest
+    driver-class-name: com.mysql.jdbc.Driver
+  kafka:
+#    bootstrap-servers: 172.19.1.209:9092
+#    bootstrap-servers: http://172.19.1.209:9092
+    bootstrap-servers: http://172.31.115.7:10129
+    #消费者的配置
+    consumer:
+      #Kafka中没有初始偏移或如果当前偏移在服务器上不再存在时,默认区最新 ，有三个选项 【latest, earliest, none】
+      auto-offset-reset: earliest
+      #是否开启自动提交
+      enable-auto-commit: false
+      #自动提交的时间间隔
+      # auto-commit-interval: 100
+      #key的解码方式
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      #value的解码方式
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      #在/usr/local/etc/kafka/consumer.properties中有配置
+      group-id: etax_datapool
+      #每次fetch请求时，server应该返回的最小字节数。如果没有足够的数据返回，请求会等待，直到足够的数据才会返回。默认：1
+      fetch-min-size: 1
+      # Fetch请求发给broker后，在broker中可能会被阻塞的（当topic中records的总size小于fetch.min.bytes时），此时这个fetch请求耗时就会比较长。这个配置就是来配置consumer最多等待response多久。
+      fetch-max-wait: 500
+      # 最大poll记录条数
+      max-poll-records: 1
+    listener:
+      concurrency: 3
+      ack-mode: MANUAL_IMMEDIATE
+      properties:
+        session.timeout.ms: 120000 # 消费会话超时时间（超过这个时间consumer没有发送心跳，就会触发rebalance操作）
+        request.timeout.ms: 180000 # 消费请求超时时间
+kafka:
+  topic: etax-datapool-prod
+  groupId: etax_datapool_prod
+#spring boot集成mybatis的方式打印sql
+logging:
+  level:
+    com.aisino.dao : debug
